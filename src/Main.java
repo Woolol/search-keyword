@@ -85,7 +85,7 @@ public class Main {
         pw.print("ファイル");
 
         fileContents.forEach((path, content) -> {
-            keywords.forEach(keyword -> {
+            for (String keyword: keywords) {
                 if (content.contains(keyword)) {
                     pw.println();
                     // 項番
@@ -97,9 +97,9 @@ public class Main {
                     // ファイルパス
                     pw.print(path);
                     counter.getAndIncrement();
-                    return;
+                    break;
                 }
-            });
+            }
         });
 
         // ファイルを閉じる
