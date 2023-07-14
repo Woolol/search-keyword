@@ -20,11 +20,20 @@ public class Main {
     public static void main(String[] args) throws IOException {
         Map<String, String> fileContents = new HashMap<>();
         // ファイル内容を取得する
+        Timer timer = new Timer();
+        timer.start();
         createFileContents(new File(args[0]), fileContents);
+        timer.stop("ファイル内容を取得する");
+        timer.reset();
         // キーワードリストを作成する
+        timer.start();
         List<String> keywords = createKeywords(new File(args[1]));
+        timer.stop("キーワードリストを作成する");
+        timer.reset();
         // CSVに出力する
-        outputCsv(fileContents, keywords);
+        timer.start();
+        csvOutput(fileContents, keywords);
+        timer.stop("CSVに出力する");
     }
 
     /**
@@ -70,7 +79,7 @@ public class Main {
      * @param keywords     キーワードリスト
      * @throws IOException Exception
      */
-    private static void outputCsv(Map<String, String> fileContents, List<String> keywords) throws IOException {
+    private static void csvOutput(Map<String, String> fileContents, List<String> keywords) throws IOException {
         AtomicInteger counter = new AtomicInteger(1);
 
         // 出力ファイルを作成
@@ -84,27 +93,50 @@ public class Main {
         pw.print(",");
         pw.print("ファイル");
 
-        fileContents.forEach((path, content) -> {
-            for (String keyword: keywords) {
-                if (content.contains(keyword)) {
-                    pw.println();
-                    // 項番
-                    pw.print(counter.get());
-                    pw.print(",");
-                    // キーワード
-                    pw.print(keyword);
-                    pw.print(",");
-                    // ファイルパス
-                    pw.print(path);
-                    counter.getAndIncrement();
+        keywords.forEach(keyword -> {
+            String filePath = "なし";
+
+            for (String file : fileContents.keySet()) {
+                if (fileContents.get(file).contains(keyword)) {
+                    filePath = file;
                     break;
                 }
             }
+            pw.println();
+            // 項番
+            pw.print(counter.get());
+            pw.print(",");
+            // キーワード
+            pw.print(keyword);
+            pw.print(",");
+            // ファイルパス
+            pw.print(filePath);
+            counter.getAndIncrement();
         });
 
         // ファイルを閉じる
         pw.close();
 
         System.out.println("出力完了");
+    }
+
+    /**
+     * タイマークラス
+     */
+    static class Timer {
+        long start;
+
+        public void start() {
+            start = System.currentTimeMillis();
+        }
+
+        public void stop(String label) {
+            long now = System.currentTimeMillis();
+            System.out.println("【" + label + "】所要時間：" + (now - start) / 1000.0 + "秒");
+        }
+
+        public void reset() {
+            start = 0;
+        }
     }
 }
